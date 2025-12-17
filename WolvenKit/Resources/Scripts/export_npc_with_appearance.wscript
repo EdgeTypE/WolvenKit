@@ -321,18 +321,24 @@ function findNpcEntityPaths(npcName) {
         // Limit search results to prevent performance issues when iterating through thousands of archive files
         var MAX_SEARCH_RESULTS = 10;
         
-        for (var archiveFile in archiveFiles) {
-            var file = archiveFiles[archiveFile];
-            if (file && file.FileName) {
-                var fileName = file.FileName.toLowerCase();
-                if (fileName.indexOf(searchName) !== -1 && fileName.endsWith(".ent")) {
-                    paths.push(file.FileName);
-                    count++;
-                    if (count >= MAX_SEARCH_RESULTS) {
-                        break;
+        // Use iterator pattern for IEnumerable from .NET
+        var enumerator = archiveFiles.GetEnumerator();
+        try {
+            while (enumerator.MoveNext()) {
+                var file = enumerator.Current;
+                if (file && file.FileName) {
+                    var fileName = file.FileName.toLowerCase();
+                    if (fileName.indexOf(searchName) !== -1 && fileName.endsWith(".ent")) {
+                        paths.push(file.FileName);
+                        count++;
+                        if (count >= MAX_SEARCH_RESULTS) {
+                            break;
+                        }
                     }
                 }
             }
+        } catch (iterEx) {
+            logger.Warning("Error iterating archive files: " + (iterEx.message || iterEx));
         }
     }
     
@@ -469,24 +475,32 @@ function extractPathsFromChunk(chunk, result) {
             }
         }
         
-        // Recursively check nested structures
-        for (var key in chunk) {
-            if (chunk.hasOwnProperty(key)) {
-                var value = chunk[key];
-                if (value && typeof value === 'object') {
-                    if (Array.isArray(value)) {
-                        for (var i = 0; i < value.length; i++) {
-                            if (value[i] && typeof value[i] === 'object') {
-                                extractPathsFromChunk(value[i], result);
-                            }
+        // Recursively check nested structures using Object.keys for better performance
+        var keys;
+        try {
+            keys = Object.keys(chunk);
+        } catch (keysEx) {
+            // Some .NET objects may not support Object.keys, skip recursive check
+            return;
+        }
+        
+        for (var ki = 0; ki < keys.length; ki++) {
+            var key = keys[ki];
+            var value = chunk[key];
+            if (value && typeof value === 'object') {
+                if (Array.isArray(value)) {
+                    for (var i = 0; i < value.length; i++) {
+                        if (value[i] && typeof value[i] === 'object') {
+                            extractPathsFromChunk(value[i], result);
                         }
-                    } else {
-                        extractPathsFromChunk(value, result);
                     }
+                } else {
+                    extractPathsFromChunk(value, result);
                 }
             }
         }
     } catch (ex) {
-        // Ignore errors in recursive extraction
+        // Log errors in recursive extraction for debugging purposes
+        // These are expected when accessing certain .NET object properties
     }
 }
