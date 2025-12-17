@@ -339,6 +339,15 @@ function findNpcEntityPaths(npcName) {
             }
         } catch (iterEx) {
             logger.Warning("Error iterating archive files: " + (iterEx.message || iterEx));
+        } finally {
+            // Dispose the enumerator to free resources
+            if (enumerator && enumerator.Dispose) {
+                try {
+                    enumerator.Dispose();
+                } catch (disposeEx) {
+                    // Disposal failure is non-critical
+                }
+            }
         }
     }
     
@@ -500,7 +509,9 @@ function extractPathsFromChunk(chunk, result) {
             }
         }
     } catch (ex) {
-        // Log errors in recursive extraction for debugging purposes
-        // These are expected when accessing certain .NET object properties
+        // Debug logging for recursive extraction errors
+        // These are expected when accessing certain .NET object properties that are not accessible from JavaScript
+        // Uncomment the line below for debugging if extraction seems incomplete:
+        // logger.Debug("Recursive extraction error (expected for some .NET properties): " + (ex.message || ex));
     }
 }
