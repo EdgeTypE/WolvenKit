@@ -203,6 +203,9 @@
     <Content Include="Resources\TemplateFiles\**\*.*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="Resources\Scripts\**\*.wscript">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
 
     <Resource Include="Resources\Media\Images\Application\Sammy_Alpha_Mask.png" />
     <Resource Include="Resources\Media\Images\Application\Sammy_Grayscale.png" />
