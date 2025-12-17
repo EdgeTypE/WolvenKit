@@ -45,7 +45,12 @@ var settings = {
 if (!wkit.ShowSettings(settings)) {
     logger.Info("Export cancelled by user");
 } else {
-    exportNpcWithAppearance(settings.npcName.value, settings.appearanceName.value, settings.exportTextures.value);
+    try {
+        exportNpcWithAppearance(settings.npcName.value, settings.appearanceName.value, settings.exportTextures.value);
+    } catch (ex) {
+        logger.Error("Export failed: " + (ex.message || ex));
+        logger.Info("Please check the log for details and ensure a project is open");
+    }
 }
 
 function exportNpcWithAppearance(npcName, appearanceName, exportTextures) {
@@ -179,7 +184,7 @@ function exportNpcWithAppearance(npcName, appearanceName, exportTextures) {
         
         var exportList = [];
         for (var ei = 0; ei < meshFiles.length; ei++) {
-            exportList.push([meshFiles[ei], meshExportSettings]);
+            exportList.push(meshFiles[ei]);
         }
         
         try {
@@ -202,7 +207,7 @@ function exportNpcWithAppearance(npcName, appearanceName, exportTextures) {
         
         var textureExportList = [];
         for (var tei = 0; tei < textureFiles.length; tei++) {
-            textureExportList.push([textureFiles[tei], textureExportSettings]);
+            textureExportList.push(textureFiles[tei]);
         }
         
         try {
@@ -313,15 +318,17 @@ function findNpcEntityPaths(npcName) {
         
         var archiveFiles = wkit.GetArchiveFiles();
         var count = 0;
-        var maxResults = 10;
+        // Limit search results to prevent performance issues when iterating through thousands of archive files
+        var MAX_SEARCH_RESULTS = 10;
         
-        for (var file of archiveFiles) {
+        for (var archiveFile in archiveFiles) {
+            var file = archiveFiles[archiveFile];
             if (file && file.FileName) {
                 var fileName = file.FileName.toLowerCase();
                 if (fileName.indexOf(searchName) !== -1 && fileName.endsWith(".ent")) {
                     paths.push(file.FileName);
                     count++;
-                    if (count >= maxResults) {
+                    if (count >= MAX_SEARCH_RESULTS) {
                         break;
                     }
                 }
