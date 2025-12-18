@@ -20,33 +20,26 @@
 // 4. Files will be extracted to your project and exported to the Raw folder
 
 // Configuration with settings dialog
+// Settings format: property names map directly to their values
+// The property grid will display these as editable fields
 var settings = {
-    npcName: {
-        type: "string",
-        label: "NPC Name",
-        description: "The name of the NPC character to export (e.g., songbird, johnny, panam, judy, rogue, kerry, v)",
-        value: "songbird"
-    },
-    appearanceName: {
-        type: "string", 
-        label: "Appearance Name",
-        description: "The appearance name to export (e.g., default, casual, combat). Use 'default' for the first appearance.",
-        value: "default"
-    },
-    exportTextures: {
-        type: "bool",
-        label: "Export Textures",
-        description: "If enabled, textures will be exported as PNG files",
-        value: true
-    }
+    NPC_Name: "songbird",
+    Appearance_Name: "default",
+    Export_Textures: true
 };
 
 // Show settings dialog
+// Instructions are logged before the dialog opens
+logger.Info("=== NPC Export Configuration ===");
+logger.Info("NPC_Name: Enter the NPC name (e.g., songbird, johnny, panam, judy, rogue, kerry, v)");
+logger.Info("Appearance_Name: Enter the appearance (e.g., default, casual, combat)");
+logger.Info("Export_Textures: Set to true to export textures as PNG files");
+
 if (!wkit.ShowSettings(settings)) {
     logger.Info("Export cancelled by user");
 } else {
     try {
-        exportNpcWithAppearance(settings.npcName.value, settings.appearanceName.value, settings.exportTextures.value);
+        exportNpcWithAppearance(settings.NPC_Name, settings.Appearance_Name, settings.Export_Textures);
     } catch (ex) {
         logger.Error("Export failed: " + (ex.message || ex));
         logger.Info("Please check the log for details and ensure a project is open");
